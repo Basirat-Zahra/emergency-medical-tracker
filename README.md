@@ -56,7 +56,7 @@ Other concepts:
 ---
 
 ## System Architecture and Workflow Diagram
-![Uploading 9b39e475-3ae3-45cc-9be1-2c6fa31270ba.png…]()
+<img width="1536" height="1024" alt="ems sawf" src="https://github.com/user-attachments/assets/23635749-0c61-4ba6-bcc3-8d41c27f5797" />
 
 ---
 
