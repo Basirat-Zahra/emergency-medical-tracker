@@ -141,25 +141,80 @@ public:
 
 int main() {
     EMSSystem ems;
-    ems.addResource(Resource("ICU_BED_01", "ICU", true));
-    ems.addResource(Resource("ICU_BED_02", "ICU", true));
-    ems.addResource(Resource("GEN_BED_01", "Bed", true));
-    // Register patients out of order
-    ems.registerPatient(Patient(101, "Alice (Broken Leg)", 3, "Bed"));
-    ems.registerPatient(Patient(102, "Bob (Heart Attack)", 5, "ICU"));
-    ems.registerPatient(Patient(103, "Charlie (Minor Cut)", 1, "Bandage"));
-    ems.registerPatient(Patient(104, "David (Severe Trauma)", 5, "ICU"));
+    std::cout << "=== Welcome to Emergency Medical Resource & Patient Tracker ===\n";
+    int choice;
 
-    // Check if the custom comparator sorted them correctly!
-    ems.printTriageQueue();
-    std::cout<<"\n--- STARTING DISPATCH PROCESSING ---\n";
-    ems.processNextEmergency();;
-    ems.processNextEmergency();;
-    ems.processNextEmergency();;
-    std::cout<<"\n";
-    ems.printTriageQueue();
-    std::cout<<"\n";
-    ems.printResolvedCases();
+    while (true) {
+        std::cout << "\n----------------------------------------\n";
+        std::cout << "1. Admit Patient\n";
+        std::cout << "2. Add Resource\n";
+        std::cout << "3. Run Next Triage Dispatch\n";
+        std::cout << "4. Show System Status (Queue & Archive)\n";
+        std::cout << "5. Exit\n";
+        std::cout << "Enter your choice (1-5): ";
+        std::cin >> choice;
+        std::cout << "----------------------------------------\n\n";
+
+        if (choice == 5) {
+            std::cout << "Exiting system. Stay safe!\n";
+            break;
+        }
+
+        switch (choice) {
+            case 1: {
+                int id, severity;
+                std::string name, reqResource;
+
+                std::cout << "Enter Patient ID (integer): ";
+                std::cin >> id;
+                std::cin.ignore(); // Clears the newline character from the input buffer
+
+                std::cout << "Enter Patient Name: ";
+                std::getline(std::cin, name); // Captures full names with spaces
+
+                std::cout << "Enter Injury Severity (1 = Minor, 5 = Critical): ";
+                std::cin >> severity;
+                std::cin.ignore();
+
+                std::cout << "Enter Required Resource Type (e.g., ICU, Bed, Ventilator): ";
+                std::getline(std::cin, reqResource);
+
+                // Add to system
+                ems.registerPatient(Patient(id, name, severity, reqResource));
+                std::cout << "\n[SUCCESS] Patient successfully admitted to triage.\n";
+                break;
+            }
+            case 2: {
+                std::string resId, type;
+
+                std::cout << "Enter Resource ID (e.g., ICU_BED_01): ";
+                std::cin >> resId;
+                std::cin.ignore();
+
+                std::cout << "Enter Resource Type (e.g., ICU, Bed, Ventilator): ";
+                std::getline(std::cin, type);
+
+                // Add to system (defaulting availability to true)
+                ems.addResource(Resource(resId, type, true));
+                std::cout << "\n[SUCCESS] Resource added to inventory.\n";
+                break;
+            }
+            case 3:
+                std::cout << "Running Triage Dispatch Engine...\n\n";
+                ems.processNextEmergency();
+                break;
+
+            case 4:
+                ems.printTriageQueue();
+                std::cout << "\n";
+                ems.printResolvedCases();
+                break;
+
+            default:
+                std::cout << "[ERROR] Invalid choice. Please select a number between 1 and 5.\n";
+                break;
+        }
+    }
 
     return 0;
 }
