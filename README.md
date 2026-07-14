@@ -55,8 +55,11 @@ Other concepts:
 
 ---
 
-## System Architecture and Workflow Diagram
-<img width="1536" height="1024" alt="ems sawf" src="https://github.com/user-attachments/assets/23635749-0c61-4ba6-bcc3-8d41c27f5797" />
+## System Architecture
+<img width="735" height="488" alt="ems sys arch" src="https://github.com/user-attachments/assets/48d23496-e40a-44f2-8119-b676223374ca" />
+
+## Workflow Diagram
+<img width="503" height="820" alt="ems workflow" src="https://github.com/user-attachments/assets/27803224-14ac-413c-9415-8c88b2ceb622" />
 
 ---
 
@@ -160,10 +163,79 @@ This project helped strengthen my understanding of:
 - Building maintainable console applications
 
 ---
+## 🚀 Getting Started
+
+### Prerequisites
+
+Before running the project, make sure you have:
+
+- A C++17 compatible compiler (GCC 7+ or later)
+- Git
+- A terminal or command prompt
+
+---
+
+## 🐧 Running on Linux
+
+### 1. Clone the repository
+
+```bash
+git clone https://github.com/Basirat-Zahra/emergency-medical-tracker.git
+cd emergency-medical-tracker
+```
+
+### 2. Compile the project
+
+```bash
+g++ -std=c++17 -Wall -Wextra -o ems.cpp
+or 
+g++ ems.cpp -o ems.exe
+```
+
+### 3. Run the application
+
+```bash
+./ems
+```
+
+---
+
+## 🪟 Running on Windows (MinGW)
+
+### 1. Clone the repository
+
+```bash
+git clone https://github.com/Basirat-Zahra/emergency-medical-tracker.git
+cd emergency-medical-tracker
+```
+
+### 2. Compile the project
+
+```bash
+g++ -std=c++17 -Wall -Wextra -o ems.exe main.cpp
+or 
+g++ ems.cpp -o ems.exe
+```
+
+### 3. Run the application
+
+```bash
+ems.exe
+```
+
+---
+
+## 📌 Notes
+
+- This project is written using **C++17** and requires a compiler that supports the C++17 standard. :contentReference[oaicite:0]{index=0}
+- The project has no external dependencies and uses only the C++ Standard Library.
+- The application is entirely console-based and can be compiled with any modern GCC/MinGW compiler supporting C++17. :contentReference[oaicite:1]{index=1}
+
+---
 
 ## Author
 
-**Basirat**
+**Basirat Z**
 
 Software Quality Assurance Engineer with an interest in C++, systems programming, and embedded systems.
 
