@@ -1,0 +1,15 @@
+ICU_BED_01|Bed|1
+ICU_BED_02|Bed|1
+ICU_BED_03|Bed|0
+ICU_ROOM_01|ICU|1
+ICU_ROOM_02|ICU|1
+ICU_ROOM_03|ICU|0
+VENT_01|Ventilator|1
+VENT_02|Ventilator|1
+VENT_03|Ventilator|0
+OR_01|OperatingRoom|1
+OR_02|OperatingRoom|0
+BED_04|Bed|1
+BED_05|Bed|1
+ICU_ROOM_04|ICU|1
+VENT_04|Ventilator|1

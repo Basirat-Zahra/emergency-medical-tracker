@@ -5,6 +5,9 @@
 #include <set>
 #include <algorithm>
 #include <vector>
+#include <fstream>
+#include <sstream>
+#include <map>
 
 class Patient{
 private:
@@ -13,14 +16,14 @@ private:
     int injurySeverity;
     std::string requiredResource;
 public:
+    
     Patient(int p_id, std::string n, int is, std::string req_r)
             : patientId(p_id), name(n), injurySeverity(is), requiredResource(req_r){}
 
-    int gtPatientId() const { return patientId; }
+    int getPatientId() const { return patientId; }
     std::string getName() const { return name; }
     int getInjurySeverity() const { return injurySeverity; }
     std::string getRequiredResource() const { return requiredResource; }
-
 
 };
 
@@ -61,8 +64,9 @@ struct ComparePatientSeverity{
         if(a.getInjurySeverity() != b.getInjurySeverity()){
             return a.getInjurySeverity() > b.getInjurySeverity();
         }
-        return a.gtPatientId() < b.gtPatientId();
+        return a.getPatientId() < b.getPatientId();
     }
+
 };
 
 class EMSSystem{
@@ -71,9 +75,14 @@ private:
     std::map<std::string, Resource> resources;
     std::set<Patient, ComparePatientSeverity> triageQueue;
     std::vector<Patient> resolvedCases;
+
+    // Files
+    std::string patientFilename = "patient.txt";
+    std::string resourceFilename = "resource.txt";
+    std::string resolvedFileName = "resolved.txt";
 public:
     void registerPatient(const Patient& p){
-        patients.insert({p.gtPatientId(), p});
+        patients.insert({p.getPatientId(), p});
 
         triageQueue.insert(p);
     }
@@ -84,9 +93,10 @@ public:
     void printTriageQueue() const {
         std::cout << "--- CURRENT TRIAGE QUEUE (Highest Priority First) ---\n";
         for (const auto& patient : triageQueue) {
-            std::cout << "ID: " << patient.gtPatientId() 
+            std::cout << "ID: " << patient.getPatientId() 
                       << " | Name: " << patient.getName() 
-                      << " | Severity: " << patient.getInjurySeverity() << "\n";
+                      << " | Severity: " << patient.getInjurySeverity()
+                      << " | Required Resource: "<< patient.getRequiredResource() << "\n";
         }
     }
 
@@ -96,34 +106,33 @@ public:
             std::cout<<"No patients currently in the triage queue.\n";
             return;
         }
-        auto patientIt = triageQueue.begin();
-        Patient currentPatient = *patientIt;
-        std::string reqType = currentPatient.getRequiredResource();
+        bool dispatchAny = false;
 
-        bool resourcefound = false;
+        for(auto patientIt = triageQueue.begin(); patientIt!=triageQueue.end(); ++patientIt){
+            Patient currentPatient = *patientIt;
+            std::string reqType = currentPatient.getRequiredResource();
 
-        for(auto& pair: resources){
-            Resource& res = pair.second;
-            if(res.getType() == reqType && res.getAvailability() == true){
-                res.setAvailability(false);
-                std::cout << "[DISPATCH SUCCESS] Patient " << currentPatient.getName() 
-                      << " (Severity " << currentPatient.getInjurySeverity() << ")"
-                      << " allocated to resource: " << res.getResourceId() << "\n";
+            for(auto& pair: resources){
+                Resource& res = pair.second;
+                if(res.getType() == reqType && res.getAvailability() == true){
+                    res.setAvailability(false);
+                    std::cout << "[DISPATCH SUCCESS] Patient " << currentPatient.getName() 
+                          << " (Severity " << currentPatient.getInjurySeverity() << ")"
+                          << " allocated to resource: " << res.getResourceId() << "\n";
 
-                      resourcefound = true;
-                      break;
+                // Move them to resolved and erase from active lists
+                resolvedCases.push_back(currentPatient);
+                patients.erase(currentPatient.getPatientId());
+                triageQueue.erase(patientIt);
+                dispatchAny = true;
+                break;
+                }
+            }
+            if(dispatchAny){
+                break;
             }
         }
 
-        if(resourcefound){
-            resolvedCases.push_back(currentPatient);
-            triageQueue.erase(patientIt);
-            patients.erase(currentPatient.gtPatientId());
-        }else{
-            std::cout << "[DISPATCH DELAY] No available " << reqType 
-                  << " found for patient " << currentPatient.getName() 
-                  << ". Holding in triage.\n";
-        }
     }
     void printResolvedCases() const {
         std::cout << "--- RESOLVED CASES ARCHIVE (Audit Log) ---\n";
@@ -132,15 +141,168 @@ public:
             return;
         }
         for (const auto& patient : resolvedCases) {
-            std::cout << "Archived ID: " << patient.gtPatientId() 
+            std::cout << "Archived ID: " << patient.getPatientId() 
                       << " | Name: " << patient.getName() 
                       << " | Status: DISPATCHED\n";
         }
+    }
+
+    void patientSaveToFile(){
+        
+        std::ofstream patientOutFile(patientFilename);
+        if(!patientOutFile.is_open()){
+            std::cerr<<"Error: Could not open file for writing.\n";
+            return;
+        }
+        for(const auto& [id, patient]:  patients){
+            patientOutFile << patient.getPatientId() << "|" 
+                           << patient.getName() << "|"
+                           << patient.getInjurySeverity() << "|"
+                           << patient.getRequiredResource() << "\n";
+        }
+        std::cout<<"Patients successfully saved to " << patientFilename<<".\n";
+    }
+
+    void resourceSaveToFile(){
+        std::ofstream resourceOutFile(resourceFilename);
+        if(!resourceOutFile.is_open()){
+            std::cerr<<"Error: Could not open file for writing";
+            return;
+        }
+        for(const auto& [id, resource]: resources){
+            resourceOutFile << resource.getResourceId() << "|"
+                            << resource.getType() << "|"
+                            << resource.getAvailability() << "\n";
+        }
+        std::cout<<"Resources successfully saves to " << resourceFilename <<".\n";
+    }
+
+    void patientLoadFromFile(){
+        std::ifstream patientinFile(patientFilename);
+
+        if(!patientinFile.is_open()){
+            std::cout<<"No existing save file found.\n";
+            return;
+        }
+        std::string line;
+        while(std::getline(patientinFile, line)){
+            if(line.empty()) continue;
+
+            std::stringstream ss(line);
+            std::string idStr, nameStr, injuryStr, reqResourceStr;
+    
+            std::getline(ss, idStr, '|');
+            std::getline(ss, nameStr, '|');
+            std::getline(ss, injuryStr, '|');
+            std::getline(ss, reqResourceStr, '|');
+
+            //Convert to correct datatypes
+            int id = std::stoi(idStr);
+            int injurySeverity = std::stoi(injuryStr);
+            Patient patient(id, nameStr, injurySeverity, reqResourceStr);
+           
+            patients.insert({patient.getPatientId(), patient});
+            triageQueue.insert(patient);
+
+
+        }
+        std::cout<<"Patients successfully loaded from "<<patientFilename<<".\n";
+    }
+
+    void resourceLoadFromFile(){
+        std::ifstream resourceinFile(resourceFilename);
+        if(!resourceinFile.is_open()){
+            std::cout<<"No existing file to found. Starting Fresh.\n";
+            return;
+        }
+
+        std::string line;
+        while(std::getline(resourceinFile, line)){
+            if(line.empty()) continue;
+
+            std::stringstream ss(line);
+            std::string idStr, typeStr, isAvailableStr;
+
+            std::getline(ss, idStr, '|');
+            std::getline(ss, typeStr, '|');
+            std::getline(ss, isAvailableStr, '|');
+
+            //Convert to correct datatype
+            bool availability = (std::stoi(isAvailableStr)==1);
+
+            Resource resource(idStr, typeStr, availability);
+
+            resources.insert({idStr, resource});
+        }
+        std::cout<<"Resource successfully loaded from "<< resourceFilename<<'\n';
+
+    }
+
+    void resolvedCaseSaveToFile(){
+        std::ofstream resolvedOutFile(resolvedFileName);
+
+        if(!resolvedOutFile.is_open()){
+            std::cerr<<"Error: Could not open file for writing";
+            return;
+        }
+        for(const auto& patient: resolvedCases){
+            resolvedOutFile << patient.getPatientId() << "|"
+                            << patient.getName() << "|"
+                            << patient.getInjurySeverity() << "|"
+                            << patient.getRequiredResource() << "\n";
+        }
+        std::cout<<"Resolved patient saved successfuy to "<< resolvedFileName << "\n";
+
+    }
+ 
+    void resolvedLoadFromFile(){
+        std::ifstream resolvedinFile(resolvedFileName);
+        if(!resolvedinFile.is_open()){
+            std::cout<< "No esisting save fie found.\n";
+            return;
+        }
+        std::string line;
+        while(std::getline(resolvedinFile, line)){
+            if(line.empty()) continue;
+
+            std::stringstream ss(line);
+            std::string idStr, nameStr, injuryStr, reqResourceStr;
+    
+            std::getline(ss, idStr, '|');
+            std::getline(ss, nameStr, '|');
+            std::getline(ss, injuryStr, '|');
+            std::getline(ss, reqResourceStr, '|');
+
+            //Convert to correct datatypes
+            int id = std::stoi(idStr);
+            int injurySeverity = std::stoi(injuryStr);
+            Patient patient(id, nameStr, injurySeverity, reqResourceStr);
+           
+            resolvedCases.push_back(patient);
+        }
+        std::cout<<"Resolved Patients successfully loaded from "<<resolvedFileName<<".\n";
+        
+    }
+ 
+    // Serialization
+    void saveToFile(    ){
+        patientSaveToFile();
+        resourceSaveToFile();
+        resolvedCaseSaveToFile();
+        std::cout << "System saved successfully.\n";
+    }
+    //load from file
+    void loadFromFile(){
+        patientLoadFromFile();
+        resourceLoadFromFile();
+        resolvedLoadFromFile();
     }
 };
 
 int main() {
     EMSSystem ems;
+    ems.loadFromFile();
+
     std::cout << "=== Welcome to Emergency Medical Resource & Patient Tracker ===\n";
     int choice;
 
@@ -216,5 +378,6 @@ int main() {
         }
     }
 
+    ems.saveToFile();
     return 0;
 }

@@ -1,0 +1,20 @@
+1232|Nami|1|Bed
+1231|Roronoa Zoro|3|ICU
+1234|Monkey D Luffy|2|ICU
+1235|Sanji|4|Ventilator
+1236|Tony Tony Chopper|2|Bed
+1237|Nico Robin|5|ICU
+1238|Usopp|1|Bed
+1239|Franky|3|OperatingRoom
+1240|Brook|2|Ventilator
+1241|Jinbe|4|ICU
+1242|Trafalgar Law|5|OperatingRoom
+1243|Boa Hancock|2|Bed
+1244|Portgas D. Ace|4|ICU
+1245|Sabo|3|Ventilator
+1246|Shanks|5|OperatingRoom
+1247|Eustass Kid|3|ICU
+1248|Killer|2|Bed
+1249|Yamato|4|Ventilator
+1250|Kaido|5|ICU
+1251|Charlotte Linlin|5|OperatingRoom
